@@ -20,6 +20,7 @@ class BaseTrainer:
 
         self.optimizer = optimizer
         self.loss_function = loss_function
+        self.lamb = config["regularizer"]["lambda"]
 
         self.model = model.to(self.device)
 

@@ -5,6 +5,7 @@ import json5
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
+from torch.nn import DataParallel
 from util.utils import initialize_config
 
 
@@ -53,12 +54,13 @@ def main(config, resume):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Wave-U-Net for Speech Enhancement")
-    parser.add_argument("-C", "--configuration", required=True, type=str, help="Configuration (*.json).")
+    parser.add_argument("-C", "--configuration", type=str, help="Configuration (*.json).", 
+                        default="/ws/ifp-10_3/hasegawa/junzhez2/LENA_pretraining/config/train/debug.json")
     parser.add_argument("-R", "--resume", action="store_true", help="Resume experiment from latest checkpoint.")
     args = parser.parse_args()
 
     configuration = json5.load(open(args.configuration))
     configuration["experiment_name"], _ = os.path.splitext(os.path.basename(args.configuration))
     configuration["config_path"] = args.configuration
-
+    print('resume_in', args.resume)
     main(configuration, resume=args.resume)

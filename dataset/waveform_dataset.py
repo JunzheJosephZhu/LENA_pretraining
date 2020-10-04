@@ -4,7 +4,8 @@ import librosa
 from torch.utils import data
 
 from util.utils import sample_fixed_length_data_aligned
-
+import random
+import tqdm
 
 class Dataset(data.Dataset):
     def __init__(self,
@@ -45,23 +46,30 @@ class Dataset(data.Dataset):
 
         assert mode in ("train", "validation"), "Mode must be one of 'train' or 'validation'."
 
-        self.length = len(dataset_list)
         self.dataset_list = dataset_list
         self.sample_length = sample_length
         self.mode = mode
+
+        segments = []
+        for dataset in tqdm.tqdm(dataset_list):
+            filename = os.path.splitext(os.path.basename(dataset))[0]
+            full_audio, sr = librosa.load(dataset, sr=None)
+            assert sr == 16000, "sr is %d, should be 16000" % sr
+            full_audio = (full_audio - full_audio.min()) / (full_audio.max() - full_audio.min()) # minmax
+            start = 0
+            while start + sample_length <= len(full_audio):
+                segments.append((full_audio[start: start + sample_length], 
+                                "%s_%d".format(filename, start//sample_length)))
+                start += sample_length
+
+        random.seed(0)
+        random.shuffle(segments)
+        self.segments = segments
+        self.length = len(segments)
 
     def __len__(self):
         return self.length
 
     def __getitem__(self, item):
-        mixture_path, clean_path = self.dataset_list[item].split(" ")
-        filename = os.path.splitext(os.path.basename(mixture_path))[0]
-        mixture, _ = librosa.load(os.path.abspath(os.path.expanduser(mixture_path)), sr=None)
-        clean, _ = librosa.load(os.path.abspath(os.path.expanduser(clean_path)), sr=None)
-
-        if self.mode == "train":
-            # The input of model should be fixed-length in the training.
-            mixture, clean = sample_fixed_length_data_aligned(mixture, clean, self.sample_length)
-            return mixture.reshape(1, -1), clean.reshape(1, -1), filename
-        else:
-            return mixture.reshape(1, -1), clean.reshape(1, -1), filename
+        segment, name = self.segments[item]
+        return segment.reshape(1, -1), segment.reshape(1, -1), name

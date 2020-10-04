@@ -1,15 +1,15 @@
 {
     "seed": 0,
     "description": "...des",
-    "root_dir": "~/Experiments/Wave-U-Net",
+    "root_dir": "/ws/ifp-10_3/hasegawa/junzhez2/LENA_pretraining",
     "cudnn_deterministic": false,
     "trainer": {
         "module": "trainer.trainer",
         "main": "Trainer",
         "epochs": 1200,
-        "save_checkpoint_interval": 10,
+        "save_checkpoint_interval": 1,
         "validation": {
-            "interval": 10,
+            "interval": 1,
             "find_max": true,
             "custom": {
                 "visualize_audio_limit": 20,
@@ -20,7 +20,7 @@
         }
     },
     "model": {
-        "module": "model.unet_basic",
+        "module": "model.encoder_decoder",
         "main": "Model",
         "args": {}
     },
@@ -30,15 +30,16 @@
         "args": {}
     },
     "optimizer": {
-        "lr": 0.001,
-        "beta1": 0.9,
-        "beta2": 0.999
+        "lr": 0.001
+    },
+    "regularizer": {
+        "lambda": 0.01
     },
     "train_dataset": {
         "module": "dataset.waveform_dataset",
         "main": "Dataset",
         "args": {
-            "dataset": "~/Datasets/SEGAN_Dataset/train_dataset.txt",
+            "dataset": "/ws/ifp-10_3/hasegawa/junzhez2/LENA_allday/train.txt",
             "limit": null,
             "offset": 0,
             "sample_length": 16384,
@@ -49,7 +50,7 @@
         "module": "dataset.waveform_dataset",
         "main": "Dataset",
         "args": {
-            "dataset": "~/Datasets/SEGAN_Dataset/test_dataset.txt",
+            "dataset": "/ws/ifp-10_3/hasegawa/junzhez2/LENA_allday/val.txt",
             "limit": 400,
             "offset": 0,
             "mode": "validation"

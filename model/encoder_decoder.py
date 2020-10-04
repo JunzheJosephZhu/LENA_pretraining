@@ -71,6 +71,7 @@ class Encoder(nn.Module):
 class Decoder(nn.Module):
     def __init__(self, n_layers=12, channels_interval=24):
         super(Decoder, self).__init__()
+
         self.n_layers = n_layers
         self.channels_interval = channels_interval
         decoder_in_channels_list = [(i + 1) * self.channels_interval for i in range(1, self.n_layers)] + [
@@ -107,11 +108,13 @@ class Decoder(nn.Module):
 
 class Model(nn.Module):
     def __init__(self, n_layers=12, channels_interval=24):
+        super(Model, self).__init__()
         self.encoder = Encoder(n_layers=n_layers, channels_interval=channels_interval)
-    
+        self.decoder = Decoder(n_layers=n_layers, channels_interval=channels_interval)
+        
     def forward(self, x):
-        e = encoder(x)
-        o = decoder(e)
+        e = self.encoder(x)
+        o = self.decoder(e)
         return o, e
 
 if __name__ == "__main__":
